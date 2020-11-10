@@ -1,28 +1,35 @@
 #! /usr/bin/env node
 const { exec } = require('child_process');
 const { writeFile } = require('fs');
+const { index } = require('./templates/html');
+const { style } = require('./templates/css');
 
-let fileName = process.argv.slice(2)[0];
-// let title = fileName.slice(0,1).toUpperCase() + fileName.slice(1);
-
-const index = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <script src="index.js" defer></script>
-  <title>${fileName}</title>
-</head>
-<body>
-    
-</body>
-</html>`;
+let folderName = process.argv.slice(2)[0];
+let openEditor = process.argv.slice(2)[1];
 
 async function generateProject() {
-  await exec(`mkdir ${fileName}`);
-  await exec(`touch ${fileName}/index.js ${fileName}/style.css`);
-  await writeFile(`./${fileName}/index.html`, index, err => (err ? console.log(err) : null));
+  try {
+    exec(`mkdir ${folderName}`);
+    exec(`touch ${folderName}/index.js`);
+    generateFile(folderName, 'index.html', index(folderName));
+    generateFile(folderName, 'style.css', style('Muli'));
+    
+    if (openEditor === '-o') {
+      exec(`code ${folderName}`);
+    }
+    
+    console.log('Successfully created a vanilla project setup.');
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function generateFile(folderName, fileName, data) {
+  try {
+    writeFile(`${folderName}/${fileName}`, data, err => (err ? console.log(err) : null));
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 generateProject();
